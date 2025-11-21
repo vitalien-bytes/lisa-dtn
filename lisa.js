@@ -69,19 +69,31 @@ const lisaStyles = `
   color: white;
   cursor: pointer;
 }
+
+.lisa-btn {
+  margin-top: 8px;
+  padding: 8px;
+  width: 100%;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
 `;
 
-/* Injecte le CSS */
+/* Inject CSS */
 const addStyle = document.createElement("style");
 addStyle.innerHTML = lisaStyles;
 document.head.appendChild(addStyle);
 
-/* === Création de la bulle === */
+/* === Bulle flottante === */
 const bubble = document.createElement("div");
 bubble.id = "dtn-bubble";
 document.body.appendChild(bubble);
 
-/* === Création de la fenêtre === */
+/* === Fenêtre LISA === */
 const windowBox = document.createElement("div");
 windowBox.id = "dtn-window";
 windowBox.innerHTML = `
@@ -94,7 +106,13 @@ windowBox.innerHTML = `
 `;
 document.body.appendChild(windowBox);
 
-/* === Fonction affichage message === */
+/* Ouvrir / fermer la fenêtre */
+bubble.addEventListener("click", () => {
+  windowBox.style.display =
+    windowBox.style.display === "none" ? "block" : "none";
+});
+
+/* === Fonction pour afficher un message === */
 function addMessage(text, from = "LISA") {
   const box = document.getElementById("dtn-messages");
   const msg = document.createElement("div");
@@ -104,35 +122,81 @@ function addMessage(text, from = "LISA") {
   box.scrollTop = box.scrollHeight;
 }
 
-/* === Ouverture / fermeture === */
-bubble.addEventListener("click", () => {
-  windowBox.style.display =
-    windowBox.style.display === "none" ? "block" : "none";
-});
+/* === Fonction pour ajouter un bouton === */
+function addButton(label, action) {
+  const box = document.getElementById("dtn-messages");
+  const btn = document.createElement("button");
+  btn.className = "lisa-btn";
+  btn.innerText = label;
+  btn.onclick = action;
+  box.appendChild(btn);
+}
 
-/* === Envoi === */
+/* === Message d’accueil automatique === */
+function lisaWelcome() {
+  windowBox.style.display = "block";
+
+  addMessage(
+    `Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.<br><br>
+    Je peux vous aider pour :<br>
+    📡 Fibre & Télécom<br>
+    ⚡ Électricité<br>
+    🔆 Panneaux solaires<br>
+    🔌 Bornes de recharge<br>
+    🛠 Travaux & installations<br><br>
+    Comment puis-je vous aider aujourd’hui ?`
+  );
+
+  addButton("🆘 Demande d'aide", () => {
+    addMessage("Très bien 👍 Comment puis-je vous aider ?", "LISA");
+  });
+
+  addButton("🧾 Demande de devis", () => {
+    addMessage("Parfait ! Pour établir un devis, puis-je avoir :<br>• Votre nom<br>• Votre adresse<br>• Votre besoin précis ?", "LISA");
+  });
+}
+
+/* === Ouverture auto après 3 secondes === */
+setTimeout(() => {
+  lisaWelcome();
+}, 3000);
+
+/* === Gestion de l’envoi classique === */
 document.getElementById("dtn-send").addEventListener("click", sendMessage);
 document.getElementById("dtn-input").addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
+/* === Intelligence simple === */
 function sendMessage() {
   const input = document.getElementById("dtn-input");
-  const msg = input.value.trim();
+  const msg = input.value.trim().toLowerCase();
   if (msg === "") return;
 
-  addMessage(msg, "Vous");
+  addMessage(input.value, "Vous");
   input.value = "";
 
   setTimeout(() => {
-    addMessage("Merci 🙏 Je traite votre demande…", "LISA");
+    if (msg.includes("électr")) {
+      addMessage("⚡ Très bien ! Quel type de problème électrique rencontrez-vous ?", "LISA");
+      return;
+    }
+
+    if (msg.includes("fibre") || msg.includes("internet")) {
+      addMessage("📡 D’accord ! Quel est votre souci avec la fibre ou l’internet ?", "LISA");
+      return;
+    }
+
+    if (msg.includes("solaire") || msg.includes("panneau")) {
+      addMessage("🔆 Voulez-vous une installation solaire ou un diagnostic ?", "LISA");
+      return;
+    }
+
+    if (msg.includes("borne") || msg.includes("recharge")) {
+      addMessage("🔌 Pour une borne de recharge, c’est pour un pro ou un particulier ?", "LISA");
+      return;
+    }
+
+    addMessage("Merci 🙏 Pouvez-vous préciser votre demande ?", "LISA");
   }, 600);
 }
-
-/* === OUVERTURE AUTOMATIQUE + MESSAGE ACCUEIL === */
-setTimeout(() => {
-  windowBox.style.display = "block";
-
-  addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
-  addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations<br><br>Comment puis-je vous aider aujourd’hui ?");
-}, 3000);
