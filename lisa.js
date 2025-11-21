@@ -43,8 +43,25 @@ const lisaStyles = `
 
 #dtn-messages {
   padding: 10px;
-  height: 380px;
+  height: 360px;
   overflow-y: auto;
+}
+
+#dtn-buttons {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.dtn-btn {
+  flex: 1;
+  padding: 8px;
+  background: #007bff;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 #dtn-input-zone {
@@ -69,34 +86,22 @@ const lisaStyles = `
   color: white;
   cursor: pointer;
 }
-
-.lisa-btn {
-  margin-top: 8px;
-  padding: 8px;
-  width: 100%;
-  border-radius: 8px;
-  background: #007bff;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  border: none;
-}
 `;
 
-/* Inject CSS */
-const addStyle = document.createElement("style");
-addStyle.innerHTML = lisaStyles;
-document.head.appendChild(addStyle);
+/* Injecte CSS */
+const style = document.createElement("style");
+style.innerHTML = lisaStyles;
+document.head.appendChild(style);
 
-/* === Bulle flottante === */
+/* === Création de la bulle === */
 const bubble = document.createElement("div");
 bubble.id = "dtn-bubble";
 document.body.appendChild(bubble);
 
-/* === Fenêtre LISA === */
-const windowBox = document.createElement("div");
-windowBox.id = "dtn-window";
-windowBox.innerHTML = `
+/* === Création de la fenêtre === */
+const box = document.createElement("div");
+box.id = "dtn-window";
+box.innerHTML = `
   <div id="dtn-header">LISA • Assistance DTN</div>
   <div id="dtn-messages"></div>
   <div id="dtn-input-zone">
@@ -104,99 +109,78 @@ windowBox.innerHTML = `
     <button id="dtn-send">➤</button>
   </div>
 `;
-document.body.appendChild(windowBox);
+document.body.appendChild(box);
 
-/* Ouvrir / fermer la fenêtre */
-bubble.addEventListener("click", () => {
-  windowBox.style.display =
-    windowBox.style.display === "none" ? "block" : "none";
-});
+/* === Ouverture / fermeture === */
+bubble.addEventListener("click", toggleChat);
+function toggleChat() {
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
 
-/* === Fonction pour afficher un message === */
+/* === Auto-ouverture après 3 sec === */
+setTimeout(() => {
+  box.style.display = "block";
+  sendWelcomeMessage();
+}, 3000);
+
+/* === Fonction d’ajout message === */
 function addMessage(text, from = "LISA") {
-  const box = document.getElementById("dtn-messages");
+  const msgBox = document.getElementById("dtn-messages");
   const msg = document.createElement("div");
   msg.style.margin = "8px 0";
   msg.innerHTML = `<strong>${from} :</strong> ${text}`;
-  box.appendChild(msg);
-  box.scrollTop = box.scrollHeight;
+  msgBox.appendChild(msg);
+  msgBox.scrollTop = msgBox.scrollHeight;
 }
 
-/* === Fonction pour ajouter un bouton === */
-function addButton(label, action) {
-  const box = document.getElementById("dtn-messages");
-  const btn = document.createElement("button");
-  btn.className = "lisa-btn";
-  btn.innerText = label;
-  btn.onclick = action;
-  box.appendChild(btn);
+/* === Message d'accueil === */
+function sendWelcomeMessage() {
+  addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
+  addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
+  addMessage("Comment puis-je vous aider aujourd’hui ?");
+
+  addServiceButtons();
 }
 
-/* === Message d’accueil automatique === */
-function lisaWelcome() {
-  windowBox.style.display = "block";
+/* === Ajout des boutons === */
+function addServiceButtons() {
+  const msgBox = document.getElementById("dtn-messages");
 
-  addMessage(
-    `Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.<br><br>
-    Je peux vous aider pour :<br>
-    📡 Fibre & Télécom<br>
-    ⚡ Électricité<br>
-    🔆 Panneaux solaires<br>
-    🔌 Bornes de recharge<br>
-    🛠 Travaux & installations<br><br>
-    Comment puis-je vous aider aujourd’hui ?`
-  );
+  const wrapper = document.createElement("div");
+  wrapper.id = "dtn-buttons";
 
-  addButton("🆘 Demande d'aide", () => {
-    addMessage("Très bien 👍 Comment puis-je vous aider ?", "LISA");
-  });
+  wrapper.innerHTML = `
+    <div class="dtn-btn" id="btn-help">Demande d’aide</div>
+    <div class="dtn-btn" id="btn-devis">Demande de devis</div>
+  `;
 
-  addButton("🧾 Demande de devis", () => {
-    addMessage("Parfait ! Pour établir un devis, puis-je avoir :<br>• Votre nom<br>• Votre adresse<br>• Votre besoin précis ?", "LISA");
-  });
+  msgBox.appendChild(wrapper);
+  msgBox.scrollTop = msgBox.scrollHeight;
+
+  document.getElementById("btn-help").onclick = () => {
+    addMessage("Très bien 👍 Quel type d’aide souhaitez-vous ?");
+  };
+
+  document.getElementById("btn-devis").onclick = () => {
+    addMessage("Parfait 🧾 Quel type de devis souhaitez-vous réaliser ?");
+  };
 }
 
-/* === Ouverture auto après 3 secondes === */
-setTimeout(() => {
-  lisaWelcome();
-}, 3000);
-
-/* === Gestion de l’envoi classique === */
+/* === Envoi message utilisateur === */
 document.getElementById("dtn-send").addEventListener("click", sendMessage);
 document.getElementById("dtn-input").addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
-/* === Intelligence simple === */
 function sendMessage() {
   const input = document.getElementById("dtn-input");
-  const msg = input.value.trim().toLowerCase();
+  const msg = input.value.trim();
   if (msg === "") return;
 
-  addMessage(input.value, "Vous");
+  addMessage(msg, "Vous");
   input.value = "";
 
   setTimeout(() => {
-    if (msg.includes("électr")) {
-      addMessage("⚡ Très bien ! Quel type de problème électrique rencontrez-vous ?", "LISA");
-      return;
-    }
-
-    if (msg.includes("fibre") || msg.includes("internet")) {
-      addMessage("📡 D’accord ! Quel est votre souci avec la fibre ou l’internet ?", "LISA");
-      return;
-    }
-
-    if (msg.includes("solaire") || msg.includes("panneau")) {
-      addMessage("🔆 Voulez-vous une installation solaire ou un diagnostic ?", "LISA");
-      return;
-    }
-
-    if (msg.includes("borne") || msg.includes("recharge")) {
-      addMessage("🔌 Pour une borne de recharge, c’est pour un pro ou un particulier ?", "LISA");
-      return;
-    }
-
-    addMessage("Merci 🙏 Pouvez-vous préciser votre demande ?", "LISA");
+    addMessage("Merci 🙏 Je traite votre demande…");
   }, 600);
 }
