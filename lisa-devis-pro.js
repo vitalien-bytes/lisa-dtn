@@ -91,7 +91,7 @@ function registerPreviousAnswer(message) {
 /* === QUESTIONS PAR SCÉNARIO === */
 function askNextQuestion() {
 
-    // On a fini les 7 questions -> récap
+    // Si toutes les questions sont finies → récap
     if (devisStep === 8) {
         showDevisRecap();
         return;
@@ -105,7 +105,7 @@ function askNextQuestion() {
     else if (scen === "Bornes de recharge IRVE") irveQuestions();
     else if (scen === "Problème internet / fibre") fibreQuestions();
     else if (scen === "Recherche de regard / détection des réseaux") regardQuestions();
-    else autresQuestions(); // "Autres"
+    else autresQuestions();
 }
 
 /* === LISTE DES QUESTIONS === */
@@ -117,7 +117,7 @@ function terrQuestions() {
         4: "Avez-vous des plans ou documents ?",
         5: "Avez-vous des photos du terrain ?",
         6: "Quelle est l’échéance souhaitée ?",
-        7: "Vos coordonnées (Nom / Téléphone / Email) ? (ex : Dupont / 0612345678 / mail@mail.com)"
+        7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
     addMessage(Q[devisStep], "LISA");
 }
@@ -218,13 +218,12 @@ Souhaitez-vous envoyer cette demande à l’équipe DTN ? (répondez : <strong>o
 /* === ENVOI EMAIL === */
 function sendDevisMail() {
 
-    // Message immédiat dans le chatbot
     addMessage("Parfait 👍 J’envoie votre demande à l’équipe DTN…", "LISA");
 
     emailjs
         .send(
-            "service_068lpkn",       // Service ID (Gmail)
-            "template_ceee5k7",      // Template ID
+            "service_068lpkn",        // ✅ Service ID
+            "template_ceee5k7",       // ✅ Template ID
             {
                 type: devisData.type || "",
                 nom: devisData.nom || "",
@@ -232,7 +231,7 @@ function sendDevisMail() {
                 mail: devisData.mail || "",
                 details: JSON.stringify(devisData, null, 2)
             },
-            "U_SAAVe1bEpxcT99N"      // Public key
+            "U_SAAVe1bEpxcT99N"       // ✅ Public Key
         )
         .then(() => {
             addMessage(
@@ -264,10 +263,9 @@ function handleFinal(message) {
     modeDevis = false;
 }
 
-/* === EXPORT GLOBAL POUR lisa.js === */
+/* === EXPORT GLOBAL === */
 function processDevisMessage(message) {
     if (!modeDevis && message.toLowerCase().startsWith("devis")) {
-        // Si quelqu’un tape "devis" tout seul, on lance le mode devis
         startDevis();
         return true;
     }
