@@ -142,7 +142,7 @@ box.innerHTML = `
 document.body.appendChild(box);
 
 
-/* Toggle */
+/* Toggle fenêtre */
 bubble.addEventListener("click", toggleChat);
 function toggleChat() {
   box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
@@ -217,7 +217,7 @@ function sendWelcomeMessage() {
 }
 
 
-/* Boutons */
+/* Boutons services */
 function addServiceButtons() {
   const msgBox = document.getElementById("dtn-messages");
   const wrapper = document.createElement("div");
