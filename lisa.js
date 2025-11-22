@@ -9,9 +9,11 @@ const lisaStyles = `
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #007bff;
-  width: 55px;
-  height: 55px;
+  background: url("https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png");
+  background-size: cover;
+  background-position: center;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   cursor: pointer;
   z-index: 99999;
@@ -39,12 +41,36 @@ const lisaStyles = `
   padding: 12px;
   font-size: 18px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#dtn-header img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
 }
 
 #dtn-messages {
   padding: 10px;
   height: 360px;
   overflow-y: auto;
+}
+
+.msg-lisa {
+  color: #0abdc6;
+  font-weight: bold;
+}
+
+.msg-user {
+  color: #000;
+}
+
+#typing {
+  font-style: italic;
+  color: grey;
+  margin: 5px 0;
 }
 
 #dtn-buttons {
@@ -86,40 +112,28 @@ const lisaStyles = `
   color: white;
   cursor: pointer;
 }
-
-#dtn-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 6px;
-  vertical-align: middle;
-}
-
-#typing {
-  color: #00e5ff;
-  font-style: italic;
-  margin: 5px 0;
-}
 `;
 
-/* Injecte CSS */
 const style = document.createElement("style");
 style.innerHTML = lisaStyles;
 document.head.appendChild(style);
 
-/* === Création de la bulle === */
+
+/* === Bulle === */
 const bubble = document.createElement("div");
 bubble.id = "dtn-bubble";
 document.body.appendChild(bubble);
 
-/* === Création de la fenêtre === */
+
+/* === Fenêtre === */
 const box = document.createElement("div");
 box.id = "dtn-window";
 box.innerHTML = `
-  <div id="dtn-header">LISA • Assistance DTN</div>
+  <div id="dtn-header">
+      <img src="https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png" />
+      LISA • Assistance DTN
+  </div>
   <div id="dtn-messages"></div>
-  <div id="typing" style="display:none;">LISA est en train d'écrire…</div>
   <div id="dtn-input-zone">
     <input id="dtn-input" type="text" placeholder="Votre message…" />
     <button id="dtn-send">➤</button>
@@ -127,58 +141,67 @@ box.innerHTML = `
 `;
 document.body.appendChild(box);
 
-/* === Ouvre / ferme === */
+
+/* Toggle */
 bubble.addEventListener("click", toggleChat);
 function toggleChat() {
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-/* === Auto-ouverture après 3 sec === */
+
+/* Auto-open */
 setTimeout(() => {
   box.style.display = "block";
   sendWelcomeMessage();
 }, 3000);
 
-/* === Affichage message === */
-function addMessage(text, from = "LISA") {
+
+/* Messages */
+function addMessage(text, from="LISA") {
   const msgBox = document.getElementById("dtn-messages");
-  const msg = document.createElement("div");
-  msg.style.margin = "8px 0";
 
-  if (from === "LISA") {
-    msg.innerHTML = `
-      <img id="dtn-avatar" src="https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png">
-      <strong style="color:#00e5ff;">${from} :</strong>
-      <span style="color:#00e5ff;"> ${text}</span>
-    `;
-  } else {
-    msg.innerHTML = `<strong>${from} :</strong> ${text}`;
-  }
+  const div = document.createElement("div");
+  div.className = from === "LISA" ? "msg-lisa" : "msg-user";
+  div.innerHTML = `<strong>${from} :</strong> ${text}`;
 
-  msgBox.appendChild(msg);
+  msgBox.appendChild(div);
   msgBox.scrollTop = msgBox.scrollHeight;
 }
 
-/* === Animation “écriture” === */
-function showTyping() {
-  document.getElementById("typing").style.display = "block";
-}
-function hideTyping() {
-  document.getElementById("typing").style.display = "none";
+/* Typing animation */
+function typing(on=true) {
+  const msgBox = document.getElementById("dtn-messages");
+  let t = document.getElementById("typing");
+
+  if (on) {
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "typing";
+      t.innerHTML = "LISA est en train d'écrire...";
+      msgBox.appendChild(t);
+    }
+  } else if (t) t.remove();
 }
 
-/* === Message d'accueil === */
+
+/* Message d'accueil */
 function sendWelcomeMessage() {
-  addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
-  addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
-  addMessage("Comment puis-je vous aider aujourd’hui ?");
-  addServiceButtons();
+  typing(true);
+  setTimeout(() => {
+    typing(false);
+    addMessage(
+      "Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network."
+    );
+    addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
+    addMessage("Comment puis-je vous aider aujourd’hui ?");
+    addServiceButtons();
+  }, 1000);
 }
 
-/* === Boutons === */
+
+/* Boutons */
 function addServiceButtons() {
   const msgBox = document.getElementById("dtn-messages");
-
   const wrapper = document.createElement("div");
   wrapper.id = "dtn-buttons";
 
@@ -200,7 +223,8 @@ function addServiceButtons() {
   };
 }
 
-/* === Envoi message === */
+
+/* Envoi */
 document.getElementById("dtn-send").addEventListener("click", sendMessage);
 document.getElementById("dtn-input").addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
@@ -214,12 +238,11 @@ function sendMessage() {
   addMessage(msg, "Vous");
   input.value = "";
 
-  // Si module devis actif
-  if (window.processDevisMessage && processDevisMessage(msg)) return;
+  if (window.processDevisMessage && window.processDevisMessage(msg)) return;
 
-  showTyping();
+  typing(true);
   setTimeout(() => {
-    hideTyping();
+    typing(false);
     addMessage("Merci 🙏 Je traite votre demande…");
-  }, 700);
+  }, 800);
 }
