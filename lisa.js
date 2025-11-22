@@ -9,7 +9,7 @@ const lisaStyles = `
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: url("https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png");
+  background: url("https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png?raw=1");
   background-size: cover;
   background-position: center;
   width: 60px;
@@ -130,7 +130,7 @@ const box = document.createElement("div");
 box.id = "dtn-window";
 box.innerHTML = `
   <div id="dtn-header">
-      <img src="https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png" />
+      <img src="https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png?raw=1" />
       LISA • Assistance DTN
   </div>
   <div id="dtn-messages"></div>
