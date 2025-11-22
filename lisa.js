@@ -185,15 +185,14 @@ function typing(on = true) {
   }
 }
 
-/* Réponse LISA avec délai + animation */
-function lisaReply(text, delay = 600) {
+/* Réponse LISA avec délai + animation (2 secondes) */
+function lisaReply(text, delay = 2000) {
   typing(true);
   setTimeout(() => {
     typing(false);
     addMessage(text, "LISA");
   }, delay);
 }
-// on l'expose pour le module devis
 window.lisaReply = lisaReply;
 
 
@@ -201,20 +200,20 @@ window.lisaReply = lisaReply;
 function sendWelcomeMessage() {
   lisaReply(
     "Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.",
-    800
+    2000
   );
 
   setTimeout(() => {
     lisaReply(
       "Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations",
-      800
+      2000
     );
-  }, 900);
+  }, 2200);
 
   setTimeout(() => {
-    lisaReply("Comment puis-je vous aider aujourd’hui ?", 800);
-    setTimeout(addServiceButtons, 700);
-  }, 1800);
+    lisaReply("Comment puis-je vous aider aujourd’hui ?", 2000);
+    setTimeout(addServiceButtons, 800);
+  }, 4200);
 }
 
 
@@ -233,11 +232,11 @@ function addServiceButtons() {
   msgBox.scrollTop = msgBox.scrollHeight;
 
   document.getElementById("btn-help").onclick = () => {
-    lisaReply("Très bien 👍 Quel type d’aide souhaitez-vous ?", 500);
+    lisaReply("Très bien 👍 Quel type d’aide souhaitez-vous ?", 2000);
   };
 
   document.getElementById("btn-devis").onclick = () => {
-    lisaReply("Parfait 🧾 Je vais vous aider pour votre demande de devis.", 500);
+    lisaReply("Parfait 🧾 Je vais vous aider pour votre demande de devis.", 2000);
     if (window.startDevis) startDevis();
   };
 }
@@ -257,9 +256,7 @@ function sendMessage() {
   addMessage(msg, "Vous");
   input.value = "";
 
-  // Si le module devis gère le message, on sort
   if (window.processDevisMessage && window.processDevisMessage(msg)) return;
 
-  // Réponse générique
-  lisaReply("Merci 🙏 Je traite votre demande…", 800);
+  lisaReply("Merci 🙏 Je traite votre demande…", 2000);
 }
