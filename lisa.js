@@ -1,7 +1,15 @@
-/* =============================
-   LISA — CHATBOT IA DTN (v2 PRO)
-   Compatible avec lisa-devis-pro.js
-============================= */
+/* =======================================================
+   LISA — CHATBOT IA DTN (v3 PRO)
+   Intégration module devis + EmailJS + boutons
+======================================================= */
+
+/* === Inject EmailJS === */
+(function () {
+  const s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js";
+  s.onload = () => emailjs.init("U_SAAVe1bEpxcT99N");
+  document.head.appendChild(s);
+})();
 
 /* === CSS dynamique === */
 const lisaStyles = `
@@ -88,7 +96,7 @@ const lisaStyles = `
 }
 `;
 
-/* Injecte CSS */
+/* Inject CSS */
 const style = document.createElement("style");
 style.innerHTML = lisaStyles;
 document.head.appendChild(style);
@@ -98,7 +106,7 @@ const bubble = document.createElement("div");
 bubble.id = "dtn-bubble";
 document.body.appendChild(bubble);
 
-/* === Création de la fenêtre === */
+/* === Fenêtre chat === */
 const box = document.createElement("div");
 box.id = "dtn-window";
 box.innerHTML = `
@@ -107,23 +115,21 @@ box.innerHTML = `
   <div id="dtn-input-zone">
     <input id="dtn-input" type="text" placeholder="Votre message…" />
     <button id="dtn-send">➤</button>
-  </div>
-`;
+  </div>`;
 document.body.appendChild(box);
 
 /* === Ouverture / fermeture === */
-bubble.addEventListener("click", toggleChat);
-function toggleChat() {
+bubble.addEventListener("click", () => {
   box.style.display = box.style.display === "none" ? "block" : "none";
-}
+});
 
-/* === Ouverture auto après 3 sec === */
+/* === Auto ouverture après 3 sec === */
 setTimeout(() => {
   box.style.display = "block";
   sendWelcomeMessage();
 }, 3000);
 
-/* === Ajout message === */
+/* === Ajouter message === */
 function addMessage(text, from = "LISA") {
   const msgBox = document.getElementById("dtn-messages");
   const msg = document.createElement("div");
@@ -133,16 +139,15 @@ function addMessage(text, from = "LISA") {
   msgBox.scrollTop = msgBox.scrollHeight;
 }
 
-/* === Message d'accueil === */
+/* === Message d’accueil === */
 function sendWelcomeMessage() {
   addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
   addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
   addMessage("Comment puis-je vous aider aujourd’hui ?");
-
   addServiceButtons();
 }
 
-/* === Boutons accueil === */
+/* === Boutons === */
 function addServiceButtons() {
   const msgBox = document.getElementById("dtn-messages");
 
@@ -157,24 +162,22 @@ function addServiceButtons() {
   msgBox.appendChild(wrapper);
   msgBox.scrollTop = msgBox.scrollHeight;
 
-  /* Bouton aide */
   document.getElementById("btn-help").onclick = () => {
     addMessage("Très bien 👍 Quel type d’aide souhaitez-vous ?");
   };
 
-  /* Bouton devis PRO (ACTIVÉ ICI) */
   document.getElementById("btn-devis").onclick = () => {
-    startDevis();
+    addMessage("Très bien 🧾 Je lance votre demande de devis.");
+    startDevis(); // 🔥 Intégration du module PRO
   };
 }
 
-/* === Messages utilisateur === */
+/* === Envoi message utilisateur === */
 document.getElementById("dtn-send").addEventListener("click", sendMessage);
 document.getElementById("dtn-input").addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
-/* === Fonction d’envoi === */
 function sendMessage() {
   const input = document.getElementById("dtn-input");
   const msg = input.value.trim();
@@ -183,19 +186,11 @@ function sendMessage() {
   addMessage(msg, "Vous");
   input.value = "";
 
-  /* === MODULE PRO : si un devis est actif, il gère la conversation === */
-  if (window.processDevisMessage && processDevisMessage(msg)) {
-      return;
-  }
+  // Priorité au module devis
+  if (window.processDevisMessage && processDevisMessage(msg)) return;
 
-  /* === Démarrage automatique si utilisateur tape "devis" === */
-  if (msg.toLowerCase().includes("devis")) {
-      startDevis();
-      return;
-  }
-
-  /* === Réponse par défaut === */
+  // Sinon réponse par défaut
   setTimeout(() => {
-    addMessage("Merci 🙏 Je traite votre demande…", "LISA");
+    addMessage("Merci 🙏 Je traite votre demande…");
   }, 600);
 }
