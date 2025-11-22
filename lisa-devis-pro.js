@@ -5,8 +5,6 @@
 
 console.log("Module Pro Devis chargé ✔️");
 
-/* === EmailJS est chargé depuis lisa.js (voir plus bas) === */
-
 let modeDevis = false;
 let devisStep = 0;
 let devisType = null;
@@ -27,7 +25,7 @@ function startDevis() {
     devisStep = 0;
     devisData = {};
 
-    addMessage(`
+    lisaReply(`
 Très bien 👍 Je vais vous aider à préparer un devis.
 
 Voici les catégories disponibles :
@@ -40,7 +38,7 @@ Voici les catégories disponibles :
 6️⃣ Autre demande  
 
 ➡️ Tapez simplement le numéro (1 à 6).
-`, "LISA");
+`, 700);
 }
 
 /* === TRAITEMENT DU MESSAGE === */
@@ -49,17 +47,17 @@ function handleDevis(message) {
     // Étape 0 : choix du type
     if (devisStep === 0) {
         if (!devisTypes[message]) {
-            addMessage("Merci de choisir un numéro entre 1 et 6 🙏", "LISA");
+            lisaReply("Merci de choisir un numéro entre 1 et 6 🙏", 500);
             return;
         }
 
         devisType = devisTypes[message];
         devisData.type = devisType;
 
-        addMessage(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, "LISA");
+        lisaReply(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, 600);
 
         devisStep = 1;
-        askNextQuestion();
+        setTimeout(askNextQuestion, 700);
         return;
     }
 
@@ -106,7 +104,6 @@ function askNextQuestion() {
     else autreQuestions();
 }
 
-/* === LISTE DES QUESTIONS === */
 function terrQuestions() {
     const Q = {
         1: "Quel type de travaux souhaitez-vous réaliser ?",
@@ -117,7 +114,7 @@ function terrQuestions() {
         6: "Quelle est l’échéance souhaitée ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ? (ex : Dupont / 0612345678 / mail@mail.com)"
     };
-    addMessage(Q[devisStep], "LISA");
+    lisaReply(Q[devisStep], 500);
 }
 
 function elecQuestions() {
@@ -130,7 +127,7 @@ function elecQuestions() {
         6: "Photos ou plans disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    addMessage(Q[devisStep], "LISA");
+    lisaReply(Q[devisStep], 500);
 }
 
 function pvQuestions() {
@@ -143,7 +140,7 @@ function pvQuestions() {
         6: "Photos de la toiture disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    addMessage(Q[devisStep], "LISA");
+    lisaReply(Q[devisStep], 500);
 }
 
 function irveQuestions() {
@@ -156,7 +153,7 @@ function irveQuestions() {
         6: "Photos disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    addMessage(Q[devisStep], "LISA");
+    lisaReply(Q[devisStep], 500);
 }
 
 function fibreQuestions() {
@@ -169,7 +166,7 @@ function fibreQuestions() {
         6: "Urgence ou non ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    addMessage(Q[devisStep], "LISA");
+    lisaReply(Q[devisStep], 500);
 }
 
 function autreQuestions() {
@@ -182,21 +179,19 @@ function autreQuestions() {
         6: "Informations supplémentaires ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    addMessage(Q[devisStep], "LISA");
+    lisaReply(Q[devisStep], 500);
 }
 
 /* === RÉCAP === */
 function showDevisRecap() {
 
     const recapTxt = `
-📄 **RÉCAPITULATIF DE VOTRE DEMANDE**
-
-${JSON.stringify(devisData, null, 2)}
-
-Souhaitez-vous envoyer cette demande ? (oui / non)
+📄 <strong>RÉCAPITULATIF DE VOTRE DEMANDE</strong><br><br>
+<pre>${JSON.stringify(devisData, null, 2)}</pre>
+<br>Souhaitez-vous envoyer cette demande ? (oui / non)
 `;
 
-    addMessage(recapTxt, "LISA");
+    lisaReply(recapTxt, 700);
     devisStep = 99;
 }
 
@@ -211,10 +206,10 @@ function sendDevisMail() {
         details: JSON.stringify(devisData, null, 2)
     }, "U_SAAVe1bEpxcT99N")
     .then(() => {
-        addMessage("Votre demande a bien été envoyée ✔️ Notre équipe vous recontacte rapidement.", "LISA");
+        lisaReply("Votre demande a bien été envoyée ✔️ Notre équipe vous recontacte rapidement.", 700);
     })
     .catch((err) => {
-        addMessage("⚠️ Erreur lors de l’envoi du mail. Essayez plus tard.", "LISA");
+        lisaReply("⚠️ Erreur lors de l’envoi du mail. Essayez plus tard.", 700);
         console.error(err);
     });
 
@@ -227,7 +222,7 @@ function handleFinal(message) {
         sendDevisMail();
         return;
     }
-    addMessage("Très bien, demande annulée. Je reste disponible 😊", "LISA");
+    lisaReply("Très bien, demande annulée. Je reste disponible 😊", 600);
     modeDevis = false;
 }
 
