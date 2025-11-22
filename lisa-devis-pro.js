@@ -1,6 +1,6 @@
 /* =======================================================
    LISA – MODULE PRO : DEMANDES DE DEVIS (EmailJS intégré)
-   Version 1.2 – entièrement corrigée pour Anthony (DTN)
+   Version 1.3 – Vitalien / DTN
 ======================================================= */
 
 console.log("Module Pro Devis chargé ✔️");
@@ -10,14 +10,15 @@ let devisStep = 0;
 let devisType = null;
 let devisData = {};
 
+// Types de prestations
 const devisTypes = {
     "1": "Terrassement / Génie civil",
     "2": "Électricité générale",
     "3": "Panneaux photovoltaïques",
     "4": "Bornes de recharge IRVE",
     "5": "Problème internet / fibre",
-    "6": "Recherche de regard / Détection de réseaux",
-    "7": "Autre demande"
+    "6": "Recherche de regard / détection des réseaux",
+    "7": "Autres"
 };
 
 /* === MESSAGE D’INTRO === */
@@ -26,21 +27,20 @@ function startDevis() {
     devisStep = 0;
     devisData = {};
 
-    lisaReply(`
-Très bien 👍 Je vais vous aider à préparer un devis.
-
-Voici les catégories disponibles :
-
-🔧 **1️⃣ Terrassement / Génie civil**  
-⚡ **2️⃣ Électricité générale**  
-🔆 **3️⃣ Panneaux photovoltaïques**  
-🔌 **4️⃣ Bornes de recharge IRVE**  
-📡 **5️⃣ Problème internet / fibre**  
-🛰️ **6️⃣ Recherche de regard / Détection de réseaux**  
-📄 **7️⃣ Autre demande**
-
+    const introHtml = `
+Très bien 👍 Je vais vous aider à préparer un devis.<br><br>
+Merci de choisir une catégorie parmi les suivantes :<br><br>
+<span style="color:#ff9800; font-weight:bold;">1️⃣ Terrassement / Génie civil</span><br>
+<span style="color:#2196f3; font-weight:bold;">2️⃣ Électricité générale</span><br>
+<span style="color:#4caf50; font-weight:bold;">3️⃣ Panneaux photovoltaïques</span><br>
+<span style="color:#9c27b0; font-weight:bold;">4️⃣ Bornes de recharge IRVE</span><br>
+<span style="color:#e91e63; font-weight:bold;">5️⃣ Problème internet / fibre</span><br>
+<span style="color:#ff5722; font-weight:bold;">6️⃣ Recherche de regard / détection des réseaux</span><br>
+<span style="color:#795548; font-weight:bold;">7️⃣ Autres</span><br><br>
 ➡️ Tapez simplement le numéro (1 à 7).
-`, 1000);
+`;
+
+    addMessage(introHtml, "LISA");
 }
 
 /* === TRAITEMENT DU MESSAGE === */
@@ -49,14 +49,14 @@ function handleDevis(message) {
     // Étape 0 : choix du type
     if (devisStep === 0) {
         if (!devisTypes[message]) {
-            lisaReply("Merci de choisir un numéro entre 1 et 7 🙏", 600);
+            addMessage("Merci de choisir un numéro entre 1 et 7 🙏", "LISA");
             return;
         }
 
         devisType = devisTypes[message];
         devisData.type = devisType;
 
-        lisaReply(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, 600);
+        addMessage(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, "LISA");
 
         devisStep = 1;
         askNextQuestion();
@@ -81,9 +81,9 @@ function registerPreviousAnswer(message) {
         case 6: devisData.q6 = message; break;
         case 7:
             const p = message.split("/");
-            devisData.nom = p[0] || "";
-            devisData.tel = p[1] || "";
-            devisData.mail = p[2] || "";
+            devisData.nom = (p[0] || "").trim();
+            devisData.tel = (p[1] || "").trim();
+            devisData.mail = (p[2] || "").trim();
             break;
     }
 }
@@ -91,6 +91,7 @@ function registerPreviousAnswer(message) {
 /* === QUESTIONS PAR SCÉNARIO === */
 function askNextQuestion() {
 
+    // On a fini les 7 questions -> récap
     if (devisStep === 8) {
         showDevisRecap();
         return;
@@ -103,14 +104,14 @@ function askNextQuestion() {
     else if (scen === "Panneaux photovoltaïques") pvQuestions();
     else if (scen === "Bornes de recharge IRVE") irveQuestions();
     else if (scen === "Problème internet / fibre") fibreQuestions();
-    else if (scen === "Recherche de regard / Détection de réseaux") detectQuestions();
-    else autreQuestions();
+    else if (scen === "Recherche de regard / détection des réseaux") regardQuestions();
+    else autresQuestions(); // "Autres"
 }
 
 /* === LISTE DES QUESTIONS === */
 function terrQuestions() {
     const Q = {
-        1: "Quel type de travaux souhaitez-vous réaliser ?",
+        1: "Quel type de travaux de terrassement / génie civil souhaitez-vous réaliser ?",
         2: "À quelle adresse se situe le chantier ?",
         3: "Quel type de bâtiment (maison / immeuble / local pro) ?",
         4: "Avez-vous des plans ou documents ?",
@@ -118,7 +119,7 @@ function terrQuestions() {
         6: "Quelle est l’échéance souhaitée ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ? (ex : Dupont / 0612345678 / mail@mail.com)"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
 function elecQuestions() {
@@ -131,7 +132,7 @@ function elecQuestions() {
         6: "Photos ou plans disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
 function pvQuestions() {
@@ -144,7 +145,7 @@ function pvQuestions() {
         6: "Photos de la toiture disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
 function irveQuestions() {
@@ -157,7 +158,7 @@ function irveQuestions() {
         6: "Photos disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
 function fibreQuestions() {
@@ -170,23 +171,23 @@ function fibreQuestions() {
         6: "Urgence ou non ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
-function detectQuestions() {
+function regardQuestions() {
     const Q = {
-        1: "S'agit-il d'un regard FT, EU, EP ou EDF ?",
-        2: "Adresse de la recherche ?",
-        3: "Terrain : maison / immeuble / entreprise ?",
-        4: "Avez-vous des plans ?",
-        5: "Photos disponibles ?",
-        6: "Urgence ou non ?",
+        1: "Quel type de recherche souhaitez-vous (regard telecom, eau, EDF, autres réseaux) ?",
+        2: "Adresse précise de l’intervention ?",
+        3: "Contexte (panne, projet de travaux, autre) ?",
+        4: "Accès au terrain (jardin, voirie, parking…) ?",
+        5: "Photos ou plans disponibles ?",
+        6: "Échéance souhaitée ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
-function autreQuestions() {
+function autresQuestions() {
     const Q = {
         1: "Pouvez-vous décrire votre besoin ?",
         2: "Adresse de l’intervention ?",
@@ -196,58 +197,82 @@ function autreQuestions() {
         6: "Informations supplémentaires ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 500);
+    addMessage(Q[devisStep], "LISA");
 }
 
 /* === RÉCAP === */
 function showDevisRecap() {
 
     const recapTxt = `
-📄 **RÉCAPITULATIF DE VOTRE DEMANDE**
-
+📄 <strong>RÉCAPITULATIF DE VOTRE DEMANDE</strong><br><br>
+<pre style="white-space: pre-wrap; font-size:12px;">
 ${JSON.stringify(devisData, null, 2)}
-
-Souhaitez-vous envoyer cette demande ? (oui / non)
+</pre>
+Souhaitez-vous envoyer cette demande à l’équipe DTN ? (répondez : <strong>oui</strong> ou <strong>non</strong>)
 `;
 
-    lisaReply(recapTxt, 500);
+    addMessage(recapTxt, "LISA");
     devisStep = 99;
 }
 
 /* === ENVOI EMAIL === */
 function sendDevisMail() {
 
-    emailjs.send("service_068lpkn", "template_n9quxp1", {
-        type: devisData.type,
-        nom: devisData.nom,
-        tel: devisData.tel,
-        mail: devisData.mail,
-        details: JSON.stringify(devisData, null, 2)
-    }, "U_SAAVe1bEpxcT99N")
-    .then(() => {
-        lisaReply("Votre demande a bien été envoyée ✔️ Nous venons de la transmettre à l’équipe DTN. Merci beaucoup 😊", 500);
-    })
-    .catch((err) => {
-        lisaReply("⚠️ Une erreur est survenue pendant l’envoi. Vous pouvez réessayer dans quelques instants.", 500);
-        console.error(err);
-    });
+    // Message immédiat dans le chatbot
+    addMessage("Parfait 👍 J’envoie votre demande à l’équipe DTN…", "LISA");
+
+    emailjs
+        .send(
+            "service_068lpkn",       // Service ID (Gmail)
+            "template_ceee5k7",      // Template ID
+            {
+                type: devisData.type || "",
+                nom: devisData.nom || "",
+                tel: devisData.tel || "",
+                mail: devisData.mail || "",
+                details: JSON.stringify(devisData, null, 2)
+            },
+            "U_SAAVe1bEpxcT99N"      // Public key
+        )
+        .then(() => {
+            addMessage(
+                "✅ Votre demande a bien été envoyée. Nous venons de la transmettre à l’équipe DTN, qui vous recontactera rapidement.",
+                "LISA"
+            );
+        })
+        .catch((err) => {
+            console.error("Erreur EmailJS :", err);
+            addMessage(
+                "⚠️ Une erreur est survenue lors de l’envoi du mail. Vous pouvez nous contacter directement par téléphone ou par email.",
+                "LISA"
+            );
+        });
 
     modeDevis = false;
 }
 
-/* === CONFIRMATION === */
+/* === CONFIRMATION FINALE === */
 function handleFinal(message) {
-    if (message.toLowerCase() === "oui") {
+    const msg = message.toLowerCase().trim();
+
+    if (msg === "oui") {
         sendDevisMail();
         return;
     }
-    lisaReply("Très bien, demande annulée. Je reste disponible 😊", 700);
+
+    addMessage("Très bien, demande annulée. Je reste disponible si vous avez besoin d’autre chose 😊", "LISA");
     modeDevis = false;
 }
 
-/* === EXPORT === */
+/* === EXPORT GLOBAL POUR lisa.js === */
 function processDevisMessage(message) {
-    if (!modeDevis) return false;
+    if (!modeDevis && message.toLowerCase().startsWith("devis")) {
+        // Si quelqu’un tape "devis" tout seul, on lance le mode devis
+        startDevis();
+        return true;
+    }
+
+    if (!modeDevis && devisStep !== 99) return false;
 
     if (devisStep === 99) {
         handleFinal(message);
