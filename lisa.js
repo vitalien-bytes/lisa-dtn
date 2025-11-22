@@ -1,15 +1,7 @@
-/* =======================================================
-   LISA — CHATBOT IA DTN (v3 PRO)
-   Intégration module devis + EmailJS + boutons
-======================================================= */
-
-/* === Inject EmailJS === */
-(function () {
-  const s = document.createElement("script");
-  s.src = "https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js";
-  s.onload = () => emailjs.init("U_SAAVe1bEpxcT99N");
-  document.head.appendChild(s);
-})();
+/* =============================
+   LISA — CHATBOT IA DTN (v3 Pro)
+   Compatible module devis
+============================= */
 
 /* === CSS dynamique === */
 const lisaStyles = `
@@ -53,6 +45,23 @@ const lisaStyles = `
   padding: 10px;
   height: 360px;
   overflow-y: auto;
+}
+
+#typing {
+  font-style: italic;
+  color: #00e5ff;
+  opacity: 0.8;
+  margin: 8px 0;
+}
+
+.user-msg {
+  color: #000;
+  font-weight: bold;
+}
+
+.lisa-msg {
+  color: #00e5ff;
+  font-weight: bold;
 }
 
 #dtn-buttons {
@@ -101,12 +110,12 @@ const style = document.createElement("style");
 style.innerHTML = lisaStyles;
 document.head.appendChild(style);
 
-/* === Création de la bulle === */
+/* === Bulle === */
 const bubble = document.createElement("div");
 bubble.id = "dtn-bubble";
 document.body.appendChild(bubble);
 
-/* === Fenêtre chat === */
+/* === Fenêtre === */
 const box = document.createElement("div");
 box.id = "dtn-window";
 box.innerHTML = `
@@ -115,36 +124,76 @@ box.innerHTML = `
   <div id="dtn-input-zone">
     <input id="dtn-input" type="text" placeholder="Votre message…" />
     <button id="dtn-send">➤</button>
-  </div>`;
+  </div>
+`;
 document.body.appendChild(box);
 
-/* === Ouverture / fermeture === */
-bubble.addEventListener("click", () => {
-  box.style.display = box.style.display === "none" ? "block" : "none";
-});
+/* === Affichage / fermeture === */
+bubble.addEventListener("click", toggleChat);
 
-/* === Auto ouverture après 3 sec === */
+function toggleChat() {
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+/* === Auto-ouverture === */
 setTimeout(() => {
   box.style.display = "block";
   sendWelcomeMessage();
 }, 3000);
 
-/* === Ajouter message === */
-function addMessage(text, from = "LISA") {
+/* === Typing indicator === */
+function showTyping() {
   const msgBox = document.getElementById("dtn-messages");
-  const msg = document.createElement("div");
-  msg.style.margin = "8px 0";
-  msg.innerHTML = `<strong>${from} :</strong> ${text}`;
-  msgBox.appendChild(msg);
+  let typing = document.getElementById("typing");
+
+  if (!typing) {
+    typing = document.createElement("div");
+    typing.id = "typing";
+    typing.innerHTML = "LISA est en train d'écrire…";
+    msgBox.appendChild(typing);
+  }
+
   msgBox.scrollTop = msgBox.scrollHeight;
 }
 
-/* === Message d’accueil === */
+function hideTyping() {
+  const typing = document.getElementById("typing");
+  if (typing) typing.remove();
+}
+
+/* === Fonction d'ajout de message === */
+function addMessage(text, from = "LISA") {
+  const box = document.getElementById("dtn-messages");
+  const msg = document.createElement("div");
+
+  msg.style.margin = "8px 0";
+
+  if (from === "LISA") {
+    msg.innerHTML = `<span class="lisa-msg">LISA :</span> ${text}`;
+  } else {
+    msg.innerHTML = `<span class="user-msg">Vous :</span> ${text}`;
+  }
+
+  box.appendChild(msg);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* === Message de bienvenue === */
 function sendWelcomeMessage() {
-  addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
-  addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
-  addMessage("Comment puis-je vous aider aujourd’hui ?");
-  addServiceButtons();
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
+  }, 600);
+
+  setTimeout(() => {
+    addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
+  }, 1200);
+
+  setTimeout(() => {
+    addMessage("Comment puis-je vous aider aujourd’hui ?");
+    addServiceButtons();
+  }, 1800);
 }
 
 /* === Boutons === */
@@ -167,8 +216,8 @@ function addServiceButtons() {
   };
 
   document.getElementById("btn-devis").onclick = () => {
-    addMessage("Très bien 🧾 Je lance votre demande de devis.");
-    startDevis(); // 🔥 Intégration du module PRO
+    addMessage("Parfait 🧾 Quel type de devis souhaitez-vous réaliser ?");
+    if (window.startDevis) startDevis();
   };
 }
 
@@ -186,11 +235,13 @@ function sendMessage() {
   addMessage(msg, "Vous");
   input.value = "";
 
-  // Priorité au module devis
+  // Module devis actif → on laisse gérer
   if (window.processDevisMessage && processDevisMessage(msg)) return;
 
-  // Sinon réponse par défaut
+  showTyping();
+
   setTimeout(() => {
-    addMessage("Merci 🙏 Je traite votre demande…");
-  }, 600);
+    hideTyping();
+    addMessage("Merci 🙏 Je traite votre demande…", "LISA");
+  }, 1200);
 }
