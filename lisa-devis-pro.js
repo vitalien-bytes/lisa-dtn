@@ -1,6 +1,6 @@
 /* =======================================================
    LISA – MODULE PRO : DEMANDES DE DEVIS (EmailJS intégré)
-   Version 1.2 – Configuré pour Vitalien (DTN)
+   Version 1.2 – entièrement corrigée pour Anthony (DTN)
 ======================================================= */
 
 console.log("Module Pro Devis chargé ✔️");
@@ -10,15 +10,14 @@ let devisStep = 0;
 let devisType = null;
 let devisData = {};
 
-/* === Types de devis mis à jour === */
 const devisTypes = {
     "1": "Terrassement / Génie civil",
     "2": "Électricité générale",
     "3": "Panneaux photovoltaïques",
     "4": "Bornes de recharge IRVE",
     "5": "Problème internet / fibre",
-    "6": "Recherche de regard / détection des réseaux",
-    "7": "Autres"
+    "6": "Recherche de regard / Détection de réseaux",
+    "7": "Autre demande"
 };
 
 /* === MESSAGE D’INTRO === */
@@ -28,34 +27,26 @@ function startDevis() {
     devisData = {};
 
     lisaReply(`
-
 Très bien 👍 Je vais vous aider à préparer un devis.
 
-Voici les catégories disponibles :<br><br>
+Voici les catégories disponibles :
 
-<span style="color:#ff5733; font-weight:bold;">1️⃣ Terrassement / Génie civil</span><br><br>
-
-<span style="color:#ff8c00; font-weight:bold;">2️⃣ Électricité générale</span><br><br>
-
-<span style="color:#ffc300; font-weight:bold;">3️⃣ Panneaux photovoltaïques</span><br><br>
-
-<span style="color:#28a745; font-weight:bold;">4️⃣ Bornes de recharge IRVE</span><br><br>
-
-<span style="color:#007bff; font-weight:bold;">5️⃣ Problème internet / fibre</span><br><br>
-
-<span style="color:#e67e22; font-weight:bold;">6️⃣ Recherche de regard / détection des réseaux</span><br><br>
-
-<span style="color:#9b59b6; font-weight:bold;">7️⃣ Autres</span><br><br>
+🔧 **1️⃣ Terrassement / Génie civil**  
+⚡ **2️⃣ Électricité générale**  
+🔆 **3️⃣ Panneaux photovoltaïques**  
+🔌 **4️⃣ Bornes de recharge IRVE**  
+📡 **5️⃣ Problème internet / fibre**  
+🛰️ **6️⃣ Recherche de regard / Détection de réseaux**  
+📄 **7️⃣ Autre demande**
 
 ➡️ Tapez simplement le numéro (1 à 7).
-
-`, 700);
+`, 1000);
 }
 
 /* === TRAITEMENT DU MESSAGE === */
 function handleDevis(message) {
 
-    // Première étape : sélection du type
+    // Étape 0 : choix du type
     if (devisStep === 0) {
         if (!devisTypes[message]) {
             lisaReply("Merci de choisir un numéro entre 1 et 7 🙏", 600);
@@ -65,10 +56,10 @@ function handleDevis(message) {
         devisType = devisTypes[message];
         devisData.type = devisType;
 
-        lisaReply(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, 800);
+        lisaReply(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, 600);
 
         devisStep = 1;
-        setTimeout(askNextQuestion, 800);
+        askNextQuestion();
         return;
     }
 
@@ -112,12 +103,11 @@ function askNextQuestion() {
     else if (scen === "Panneaux photovoltaïques") pvQuestions();
     else if (scen === "Bornes de recharge IRVE") irveQuestions();
     else if (scen === "Problème internet / fibre") fibreQuestions();
-    else if (scen === "Recherche de regard / détection des réseaux") detectQuestions();
-    else autresQuestions();
+    else if (scen === "Recherche de regard / Détection de réseaux") detectQuestions();
+    else autreQuestions();
 }
 
 /* === LISTE DES QUESTIONS === */
-
 function terrQuestions() {
     const Q = {
         1: "Quel type de travaux souhaitez-vous réaliser ?",
@@ -126,22 +116,22 @@ function terrQuestions() {
         4: "Avez-vous des plans ou documents ?",
         5: "Avez-vous des photos du terrain ?",
         6: "Quelle est l’échéance souhaitée ?",
-        7: "Vos coordonnées (Nom / Téléphone / Email) ?"
+        7: "Vos coordonnées (Nom / Téléphone / Email) ? (ex : Dupont / 0612345678 / mail@mail.com)"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
 function elecQuestions() {
     const Q = {
         1: "Quel type de bâtiment (maison, entreprise…) ?",
-        2: "Installation / rénovation / dépannage ?",
+        2: "Installation / rénovation / dépannage / autre ?",
         3: "Adresse des travaux ?",
         4: "Surface ou nombre de pièces ?",
         5: "Est-ce une urgence ?",
         6: "Photos ou plans disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
 function pvQuestions() {
@@ -154,20 +144,20 @@ function pvQuestions() {
         6: "Photos de la toiture disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
 function irveQuestions() {
     const Q = {
         1: "Installation chez particulier / entreprise / copropriété ?",
         2: "Nombre de bornes souhaitées ?",
-        3: "Puissance souhaitée (7 / 11 / 22 kW) ?",
+        3: "Puissance souhaitée (7 / 11 / 22kW) ?",
         4: "Adresse du chantier ?",
         5: "Distance tableau → stationnement ?",
         6: "Photos disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
 function fibreQuestions() {
@@ -180,25 +170,23 @@ function fibreQuestions() {
         6: "Urgence ou non ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
-/* === NOUVELLE CATÉGORIE : DÉTECTION RESEAUX === */
 function detectQuestions() {
     const Q = {
-        1: "Quel type de réseau souhaitez-vous détecter ? (EDF / Télécom / Eau / Gaz)",
-        2: "À quelle adresse se situe la zone de recherche ?",
-        3: "Avez-vous une idée de l’emplacement approximatif ?",
-        4: "S’agit-il d’une recherche pour travaux / dépannage / étude ?",
-        5: "Avez-vous des plans ou photos de la zone ?",
-        6: "Quelle est l’échéance souhaitée ?",
+        1: "S'agit-il d'un regard FT, EU, EP ou EDF ?",
+        2: "Adresse de la recherche ?",
+        3: "Terrain : maison / immeuble / entreprise ?",
+        4: "Avez-vous des plans ?",
+        5: "Photos disponibles ?",
+        6: "Urgence ou non ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
-/* === CATÉGORIE 7 : AUTRES === */
-function autresQuestions() {
+function autreQuestions() {
     const Q = {
         1: "Pouvez-vous décrire votre besoin ?",
         2: "Adresse de l’intervention ?",
@@ -208,26 +196,28 @@ function autresQuestions() {
         6: "Informations supplémentaires ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
-    lisaReply(Q[devisStep], 700);
+    lisaReply(Q[devisStep], 500);
 }
 
 /* === RÉCAP === */
 function showDevisRecap() {
 
     const recapTxt = `
-📄 <strong>RÉCAPITULATIF DE VOTRE DEMANDE</strong><br><br>
-<pre>${JSON.stringify(devisData, null, 2)}</pre>
-<br>Souhaitez-vous envoyer cette demande ? (oui / non)
+📄 **RÉCAPITULATIF DE VOTRE DEMANDE**
+
+${JSON.stringify(devisData, null, 2)}
+
+Souhaitez-vous envoyer cette demande ? (oui / non)
 `;
 
-    lisaReply(recapTxt, 1200);
+    lisaReply(recapTxt, 500);
     devisStep = 99;
 }
 
 /* === ENVOI EMAIL === */
 function sendDevisMail() {
 
-    emailjs.send("service_068lpkn", "template_ceee5k7", {
+    emailjs.send("service_068lpkn", "template_n9quxp1", {
         type: devisData.type,
         nom: devisData.nom,
         tel: devisData.tel,
@@ -235,10 +225,10 @@ function sendDevisMail() {
         details: JSON.stringify(devisData, null, 2)
     }, "U_SAAVe1bEpxcT99N")
     .then(() => {
-        lisaReply("Votre demande a bien été envoyée ✔️ Notre équipe vous recontacte rapidement.", 1200);
+        lisaReply("Votre demande a bien été envoyée ✔️ Nous venons de la transmettre à l’équipe DTN. Merci beaucoup 😊", 500);
     })
     .catch((err) => {
-        lisaReply("⚠️ Erreur lors de l’envoi du mail. Essayez plus tard.", 1200);
+        lisaReply("⚠️ Une erreur est survenue pendant l’envoi. Vous pouvez réessayer dans quelques instants.", 500);
         console.error(err);
     });
 
@@ -251,7 +241,7 @@ function handleFinal(message) {
         sendDevisMail();
         return;
     }
-    lisaReply("Très bien, demande annulée. Je reste disponible 😊", 900);
+    lisaReply("Très bien, demande annulée. Je reste disponible 😊", 700);
     modeDevis = false;
 }
 
