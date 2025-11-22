@@ -1,7 +1,10 @@
 /* =============================
-   LISA — CHATBOT IA DTN (v3 Pro)
-   Compatible module devis
+   LISA — CHATBOT IA DTN (v3)
+   Avatar + Typing + Couleurs pro
 ============================= */
+
+/* === URL de l’avatar Lisa === */
+const LISA_AVATAR = "https://raw.githubusercontent.com/vitalien-bytes/lisa-dtn/main/avatar-lisa.png";
 
 /* === CSS dynamique === */
 const lisaStyles = `
@@ -41,46 +44,53 @@ const lisaStyles = `
   font-weight: bold;
 }
 
+/* Messages */
+.dtn-msg {
+  margin: 8px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dtn-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 4px;
+}
+
+.dtn-text-lisa {
+  background: #e0faff;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 230px;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.dtn-text-user {
+  background: #f1f1f1;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 230px;
+  color: #000;
+  margin-left: auto;
+}
+
+#dtn-typing {
+  font-style: italic;
+  color: #888;
+  margin: 5px 0;
+}
+
 #dtn-messages {
   padding: 10px;
   height: 360px;
   overflow-y: auto;
 }
 
-#typing {
-  font-style: italic;
-  color: #00e5ff;
-  opacity: 0.8;
-  margin: 8px 0;
-}
-
-.user-msg {
-  color: #000;
-  font-weight: bold;
-}
-
-.lisa-msg {
-  color: #00e5ff;
-  font-weight: bold;
-}
-
-#dtn-buttons {
-  margin-top: 10px;
-  display: flex;
-  gap: 8px;
-}
-
-.dtn-btn {
-  flex: 1;
-  padding: 8px;
-  background: #007bff;
-  color: white;
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 14px;
-}
-
+/* Input zone */
 #dtn-input-zone {
   padding: 10px;
   display: flex;
@@ -103,6 +113,24 @@ const lisaStyles = `
   color: white;
   cursor: pointer;
 }
+
+/* Buttons */
+#dtn-buttons {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.dtn-btn {
+  flex: 1;
+  padding: 8px;
+  background: #007bff;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+}
 `;
 
 /* Inject CSS */
@@ -110,12 +138,12 @@ const style = document.createElement("style");
 style.innerHTML = lisaStyles;
 document.head.appendChild(style);
 
-/* === Bulle === */
+/* === Create bubble === */
 const bubble = document.createElement("div");
 bubble.id = "dtn-bubble";
 document.body.appendChild(bubble);
 
-/* === Fenêtre === */
+/* === Create window === */
 const box = document.createElement("div");
 box.id = "dtn-window";
 box.innerHTML = `
@@ -128,120 +156,100 @@ box.innerHTML = `
 `;
 document.body.appendChild(box);
 
-/* === Affichage / fermeture === */
-bubble.addEventListener("click", toggleChat);
-
-function toggleChat() {
+/* === Toggle Chat === */
+bubble.onclick = () => {
   box.style.display = box.style.display === "none" ? "block" : "none";
+};
+
+/* === Typing indicator === */
+function showTyping() {
+  const zone = document.getElementById("dtn-messages");
+  const typing = document.createElement("div");
+  typing.id = "dtn-typing";
+  typing.innerHTML = "LISA est en train d’écrire…";
+  zone.appendChild(typing);
+  zone.scrollTop = zone.scrollHeight;
 }
 
-/* === Auto-ouverture === */
+function hideTyping() {
+  const el = document.getElementById("dtn-typing");
+  if (el) el.remove();
+}
+
+/* === Add message === */
+function addMessage(text, from = "LISA") {
+  const zone = document.getElementById("dtn-messages");
+
+  hideTyping();
+
+  const msg = document.createElement("div");
+  msg.classList.add("dtn-msg");
+
+  if (from === "LISA") {
+    msg.innerHTML = `
+      <img src="${LISA_AVATAR}" class="dtn-avatar">
+      <div class="dtn-text-lisa">${text}</div>
+    `;
+  } else {
+    msg.innerHTML = `
+      <div class="dtn-text-user">${text}</div>
+    `;
+  }
+
+  zone.appendChild(msg);
+  zone.scrollTop = zone.scrollHeight;
+}
+
+/* === Auto-open + welcome === */
 setTimeout(() => {
   box.style.display = "block";
   sendWelcomeMessage();
 }, 3000);
 
-/* === Typing indicator === */
-function showTyping() {
-  const msgBox = document.getElementById("dtn-messages");
-  let typing = document.getElementById("typing");
-
-  if (!typing) {
-    typing = document.createElement("div");
-    typing.id = "typing";
-    typing.innerHTML = "LISA est en train d'écrire…";
-    msgBox.appendChild(typing);
-  }
-
-  msgBox.scrollTop = msgBox.scrollHeight;
-}
-
-function hideTyping() {
-  const typing = document.getElementById("typing");
-  if (typing) typing.remove();
-}
-
-/* === Fonction d'ajout de message === */
-function addMessage(text, from = "LISA") {
-  const box = document.getElementById("dtn-messages");
-  const msg = document.createElement("div");
-
-  msg.style.margin = "8px 0";
-
-  if (from === "LISA") {
-    msg.innerHTML = `<span class="lisa-msg">LISA :</span> ${text}`;
-  } else {
-    msg.innerHTML = `<span class="user-msg">Vous :</span> ${text}`;
-  }
-
-  box.appendChild(msg);
-  box.scrollTop = box.scrollHeight;
-}
-
-/* === Message de bienvenue === */
 function sendWelcomeMessage() {
-  showTyping();
-  setTimeout(() => {
-    hideTyping();
-    addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
-  }, 600);
-
-  setTimeout(() => {
-    addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
-  }, 1200);
-
-  setTimeout(() => {
-    addMessage("Comment puis-je vous aider aujourd’hui ?");
-    addServiceButtons();
-  }, 1800);
+  addMessage("Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.");
+  addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
+  addMessage("Comment puis-je vous aider aujourd’hui ?");
+  addServiceButtons();
 }
 
-/* === Boutons === */
+/* === Buttons === */
 function addServiceButtons() {
-  const msgBox = document.getElementById("dtn-messages");
+  const zone = document.getElementById("dtn-messages");
+  const wrap = document.createElement("div");
+  wrap.id = "dtn-buttons";
 
-  const wrapper = document.createElement("div");
-  wrapper.id = "dtn-buttons";
-
-  wrapper.innerHTML = `
+  wrap.innerHTML = `
     <div class="dtn-btn" id="btn-help">Demande d’aide</div>
     <div class="dtn-btn" id="btn-devis">Demande de devis</div>
   `;
 
-  msgBox.appendChild(wrapper);
-  msgBox.scrollTop = msgBox.scrollHeight;
+  zone.appendChild(wrap);
+  zone.scrollTop = zone.scrollHeight;
 
-  document.getElementById("btn-help").onclick = () => {
+  document.getElementById("btn-help").onclick = () =>
     addMessage("Très bien 👍 Quel type d’aide souhaitez-vous ?");
-  };
-
-  document.getElementById("btn-devis").onclick = () => {
-    addMessage("Parfait 🧾 Quel type de devis souhaitez-vous réaliser ?");
-    if (window.startDevis) startDevis();
-  };
+  document.getElementById("btn-devis").onclick = () => startDevis();
 }
 
-/* === Envoi message utilisateur === */
-document.getElementById("dtn-send").addEventListener("click", sendMessage);
-document.getElementById("dtn-input").addEventListener("keypress", (e) => {
+/* === Input send === */
+document.getElementById("dtn-send").onclick = sendMessage;
+document.getElementById("dtn-input").addEventListener("keydown", e => {
   if (e.key === "Enter") sendMessage();
 });
 
 function sendMessage() {
   const input = document.getElementById("dtn-input");
   const msg = input.value.trim();
-  if (msg === "") return;
+  if (!msg) return;
 
   addMessage(msg, "Vous");
   input.value = "";
 
-  // Module devis actif → on laisse gérer
-  if (window.processDevisMessage && processDevisMessage(msg)) return;
+  if (typeof processDevisMessage === "function" && processDevisMessage(msg)) return;
 
   showTyping();
-
   setTimeout(() => {
-    hideTyping();
-    addMessage("Merci 🙏 Je traite votre demande…", "LISA");
-  }, 1200);
+    addMessage("Merci 🙏 Je traite votre demande…");
+  }, 600);
 }
