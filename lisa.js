@@ -1,6 +1,6 @@
 /* =============================
-   LISA — CHATBOT IA DTN (v2)
-   Script externe GitHub
+   LISA — CHATBOT IA DTN (v2 PRO)
+   Compatible avec lisa-devis-pro.js
 ============================= */
 
 /* === CSS dynamique === */
@@ -117,13 +117,13 @@ function toggleChat() {
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-/* === Auto-ouverture après 3 sec === */
+/* === Ouverture auto après 3 sec === */
 setTimeout(() => {
   box.style.display = "block";
   sendWelcomeMessage();
 }, 3000);
 
-/* === Fonction d’ajout message === */
+/* === Ajout message === */
 function addMessage(text, from = "LISA") {
   const msgBox = document.getElementById("dtn-messages");
   const msg = document.createElement("div");
@@ -142,7 +142,7 @@ function sendWelcomeMessage() {
   addServiceButtons();
 }
 
-/* === Ajout des boutons === */
+/* === Boutons accueil === */
 function addServiceButtons() {
   const msgBox = document.getElementById("dtn-messages");
 
@@ -157,21 +157,24 @@ function addServiceButtons() {
   msgBox.appendChild(wrapper);
   msgBox.scrollTop = msgBox.scrollHeight;
 
+  /* Bouton aide */
   document.getElementById("btn-help").onclick = () => {
     addMessage("Très bien 👍 Quel type d’aide souhaitez-vous ?");
   };
 
+  /* Bouton devis PRO (ACTIVÉ ICI) */
   document.getElementById("btn-devis").onclick = () => {
-    addMessage("Parfait 🧾 Quel type de devis souhaitez-vous réaliser ?");
+    startDevis();
   };
 }
 
-/* === Envoi message utilisateur === */
+/* === Messages utilisateur === */
 document.getElementById("dtn-send").addEventListener("click", sendMessage);
 document.getElementById("dtn-input").addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
+/* === Fonction d’envoi === */
 function sendMessage() {
   const input = document.getElementById("dtn-input");
   const msg = input.value.trim();
@@ -180,7 +183,19 @@ function sendMessage() {
   addMessage(msg, "Vous");
   input.value = "";
 
+  /* === MODULE PRO : si un devis est actif, il gère la conversation === */
+  if (window.processDevisMessage && processDevisMessage(msg)) {
+      return;
+  }
+
+  /* === Démarrage automatique si utilisateur tape "devis" === */
+  if (msg.toLowerCase().includes("devis")) {
+      startDevis();
+      return;
+  }
+
+  /* === Réponse par défaut === */
   setTimeout(() => {
-    addMessage("Merci 🙏 Je traite votre demande…");
+    addMessage("Merci 🙏 Je traite votre demande…", "LISA");
   }, 600);
 }
