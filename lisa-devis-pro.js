@@ -1,18 +1,17 @@
 /* =======================================================
-   LISA – MODULE PRO : DEMANDES DE DEVIS (6 SCÉNARIOS)
-   Version 1.0 – Compatible avec lisa.js
-   Auteur : ChatGPT & Vitalien
+   LISA – MODULE PRO : DEMANDES DE DEVIS (EmailJS intégré)
+   Version 1.1 – Configuré pour Vitalien
 ======================================================= */
 
 console.log("Module Pro Devis chargé ✔️");
 
-/* === VARIABLES GLOBALES === */
+/* === EmailJS est chargé depuis lisa.js (voir plus bas) === */
+
 let modeDevis = false;
 let devisStep = 0;
 let devisType = null;
 let devisData = {};
 
-/* === LISTE DES TYPES === */
 const devisTypes = {
     "1": "Terrassement / Génie civil",
     "2": "Électricité générale",
@@ -22,59 +21,58 @@ const devisTypes = {
     "6": "Autre demande"
 };
 
-/* === MESSAGE D’INTRO DEVIS === */
+/* === MESSAGE D’INTRO === */
 function startDevis() {
     modeDevis = true;
     devisStep = 0;
     devisData = {};
 
-    addMessage(
-        `Très bien 👍 Je vais vous aider à préparer un devis.\n
-Voici les catégories disponibles :\n
-1️⃣ Terrassement / Génie civil
-2️⃣ Électricité générale
-3️⃣ Panneaux photovoltaïques
-4️⃣ Bornes de recharge IRVE
-5️⃣ Problème internet / fibre
-6️⃣ Autre demande
+    addMessage(`
+Très bien 👍 Je vais vous aider à préparer un devis.
 
-➡️ *Tapez simplement le numéro (1 à 6).*`,
-        "LISA"
-    );
+Voici les catégories disponibles :
+
+1️⃣ Terrassement / Génie civil  
+2️⃣ Électricité générale  
+3️⃣ Panneaux photovoltaïques  
+4️⃣ Bornes de recharge IRVE  
+5️⃣ Problème internet / fibre  
+6️⃣ Autre demande  
+
+➡️ Tapez simplement le numéro (1 à 6).
+`, "LISA");
 }
 
-/* === LOGIQUE PRINCIPALE DU MODULE === */
+/* === TRAITEMENT DU MESSAGE === */
 function handleDevis(message) {
 
-    /* 1️⃣ Étape 0 : Choix du type de devis */
+    // Étape 0 : choix du type
     if (devisStep === 0) {
         if (!devisTypes[message]) {
-            addMessage("Merci de choisir un numéro entre 1 et 6.", "LISA");
+            addMessage("Merci de choisir un numéro entre 1 et 6 🙏", "LISA");
             return;
         }
 
         devisType = devisTypes[message];
         devisData.type = devisType;
 
-        addMessage(`Très bien, vous avez choisi : *${devisType}*`, "LISA");
+        addMessage(`Parfait 👍 Vous avez choisi : <strong>${devisType}</strong>`, "LISA");
 
         devisStep = 1;
         askNextQuestion();
         return;
     }
 
-    /* 2️⃣ Enregistrement de la réponse précédente */
+    // Stocke la réponse précédente
     registerPreviousAnswer(message);
 
-    /* 3️⃣ Passage à la question suivante */
     devisStep++;
     askNextQuestion();
 }
 
-/* === ENREGISTREMENT DES RÉPONSES === */
+/* === STOCKAGE DES RÉPONSES === */
 function registerPreviousAnswer(message) {
     switch (devisStep) {
-
         case 1: devisData.q1 = message; break;
         case 2: devisData.q2 = message; break;
         case 3: devisData.q3 = message; break;
@@ -82,10 +80,10 @@ function registerPreviousAnswer(message) {
         case 5: devisData.q5 = message; break;
         case 6: devisData.q6 = message; break;
         case 7:
-            const parts = message.split("/");
-            devisData.nom = parts[0] || "";
-            devisData.tel = parts[1] || "";
-            devisData.mail = parts[2] || "";
+            const p = message.split("/");
+            devisData.nom = p[0] || "";
+            devisData.tel = p[1] || "";
+            devisData.mail = p[2] || "";
             break;
     }
 }
@@ -93,37 +91,22 @@ function registerPreviousAnswer(message) {
 /* === QUESTIONS PAR SCÉNARIO === */
 function askNextQuestion() {
 
-    /* ARRIVÉE AU RÉCAPITULATIF */
     if (devisStep === 8) {
         showDevisRecap();
         return;
     }
 
-    /* SCÉNARIOS */
-    const scenar = devisType;
+    const scen = devisType;
 
-    if (scenar === "Terrassement / Génie civil") {
-        terrQuestions();
-    }
-    else if (scenar === "Électricité générale") {
-        elecQuestions();
-    }
-    else if (scenar === "Panneaux photovoltaïques") {
-        pvQuestions();
-    }
-    else if (scenar === "Bornes de recharge IRVE") {
-        irveQuestions();
-    }
-    else if (scenar === "Problème internet / fibre") {
-        fibreQuestions();
-    }
-    else {
-        autreQuestions();
-    }
+    if (scen === "Terrassement / Génie civil") terrQuestions();
+    else if (scen === "Électricité générale") elecQuestions();
+    else if (scen === "Panneaux photovoltaïques") pvQuestions();
+    else if (scen === "Bornes de recharge IRVE") irveQuestions();
+    else if (scen === "Problème internet / fibre") fibreQuestions();
+    else autreQuestions();
 }
 
-/* === LISTE DES QUESTIONS PAR SCÉNARIO === */
-
+/* === LISTE DES QUESTIONS === */
 function terrQuestions() {
     const Q = {
         1: "Quel type de travaux souhaitez-vous réaliser ?",
@@ -132,7 +115,7 @@ function terrQuestions() {
         4: "Avez-vous des plans ou documents ?",
         5: "Avez-vous des photos du terrain ?",
         6: "Quelle est l’échéance souhaitée ?",
-        7: "Vos coordonnées (Nom / Téléphone / Email) ?"
+        7: "Vos coordonnées (Nom / Téléphone / Email) ? (ex : Dupont / 0612345678 / mail@mail.com)"
     };
     addMessage(Q[devisStep], "LISA");
 }
@@ -156,7 +139,7 @@ function pvQuestions() {
         2: "Autoconsommation ou revente totale ?",
         3: "Type de toiture + orientation ?",
         4: "Adresse du chantier ?",
-        5: "Date souhaitée (3 mois / 6 mois) ?",
+        5: "Date souhaitée ?",
         6: "Photos de la toiture disponibles ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
@@ -167,7 +150,7 @@ function irveQuestions() {
     const Q = {
         1: "Installation chez particulier / entreprise / copropriété ?",
         2: "Nombre de bornes souhaitées ?",
-        3: "Puissance souhaitée (7/11/22kW) ?",
+        3: "Puissance souhaitée (7 / 11 / 22kW) ?",
         4: "Adresse du chantier ?",
         5: "Distance tableau → stationnement ?",
         6: "Photos disponibles ?",
@@ -182,7 +165,7 @@ function fibreQuestions() {
         2: "Êtes-vous en fibre ou cuivre ?",
         3: "Quel opérateur ?",
         4: "Adresse du problème ?",
-        5: "Avez-vous des photos ?",
+        5: "Photos disponibles ?",
         6: "Urgence ou non ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
@@ -196,49 +179,61 @@ function autreQuestions() {
         3: "Échéance souhaitée ?",
         4: "Photos disponibles ?",
         5: "Documents disponibles ?",
-        6: "Avez-vous des informations supplémentaires ?",
+        6: "Informations supplémentaires ?",
         7: "Vos coordonnées (Nom / Téléphone / Email) ?"
     };
     addMessage(Q[devisStep], "LISA");
 }
 
-/* === RÉCAPITULATIF === */
+/* === RÉCAP === */
 function showDevisRecap() {
-    const rec = `
-📄 **RÉCAPITULATIF DE VOTRE DEMANDE**
-Type : ${devisData.type}
 
-➡️ Réponses :
+    const recapTxt = `
+📄 **RÉCAPITULATIF DE VOTRE DEMANDE**
+
 ${JSON.stringify(devisData, null, 2)}
 
-Confirmez-vous l’envoi ? (oui / non)
-    `;
+Souhaitez-vous envoyer cette demande ? (oui / non)
+`;
 
-    addMessage(rec, "LISA");
+    addMessage(recapTxt, "LISA");
     devisStep = 99;
 }
 
-/* === ENVOI DU MAIL === */
+/* === ENVOI EMAIL === */
 function sendDevisMail() {
-    addMessage("Votre demande a bien été envoyée ✔️ Notre équipe vous recontacte rapidement.", "LISA");
 
-    // Ici tu peux appeler EmailJS OU une API externe
+    emailjs.send("service_068lpkn", "template_ceee5k7", {
+        type: devisData.type,
+        nom: devisData.nom,
+        tel: devisData.tel,
+        mail: devisData.mail,
+        details: JSON.stringify(devisData, null, 2)
+    }, "U_SAAVe1bEpxcT99N")
+    .then(() => {
+        addMessage("Votre demande a bien été envoyée ✔️ Notre équipe vous recontacte rapidement.", "LISA");
+    })
+    .catch((err) => {
+        addMessage("⚠️ Erreur lors de l’envoi du mail. Essayez plus tard.", "LISA");
+        console.error(err);
+    });
+
+    modeDevis = false;
 }
 
-/* === GESTION DE LA RÉPONSE FINALE === */
+/* === CONFIRMATION === */
 function handleFinal(message) {
     if (message.toLowerCase() === "oui") {
         sendDevisMail();
-        modeDevis = false;
         return;
     }
     addMessage("Très bien, demande annulée. Je reste disponible 😊", "LISA");
     modeDevis = false;
 }
 
-/* === EXPORT — utilisation dans lisa.js === */
+/* === EXPORT === */
 function processDevisMessage(message) {
-    if (modeDevis === false) return false;
+    if (!modeDevis) return false;
 
     if (devisStep === 99) {
         handleFinal(message);
@@ -249,6 +244,5 @@ function processDevisMessage(message) {
     return true;
 }
 
-/* === EXPORT DE LA FONCTION start === */
 window.startDevis = startDevis;
 window.processDevisMessage = processDevisMessage;
