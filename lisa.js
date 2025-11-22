@@ -145,7 +145,7 @@ document.body.appendChild(box);
 /* Toggle */
 bubble.addEventListener("click", toggleChat);
 function toggleChat() {
-  box.style.display = box.style.display === "none" ? "block" : "none";
+  box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
 }
 
 
@@ -156,8 +156,8 @@ setTimeout(() => {
 }, 3000);
 
 
-/* Messages */
-function addMessage(text, from="LISA") {
+/* Messages génériques */
+function addMessage(text, from = "LISA") {
   const msgBox = document.getElementById("dtn-messages");
 
   const div = document.createElement("div");
@@ -168,8 +168,8 @@ function addMessage(text, from="LISA") {
   msgBox.scrollTop = msgBox.scrollHeight;
 }
 
-/* Typing animation */
-function typing(on=true) {
+/* Animation "LISA est en train d'écrire..." */
+function typing(on = true) {
   const msgBox = document.getElementById("dtn-messages");
   let t = document.getElementById("typing");
 
@@ -180,22 +180,41 @@ function typing(on=true) {
       t.innerHTML = "LISA est en train d'écrire...";
       msgBox.appendChild(t);
     }
-  } else if (t) t.remove();
+  } else if (t) {
+    t.remove();
+  }
 }
+
+/* Réponse LISA avec délai + animation */
+function lisaReply(text, delay = 600) {
+  typing(true);
+  setTimeout(() => {
+    typing(false);
+    addMessage(text, "LISA");
+  }, delay);
+}
+// on l'expose pour le module devis
+window.lisaReply = lisaReply;
 
 
 /* Message d'accueil */
 function sendWelcomeMessage() {
-  typing(true);
+  lisaReply(
+    "Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network.",
+    800
+  );
+
   setTimeout(() => {
-    typing(false);
-    addMessage(
-      "Bonjour 👋, je suis <strong>LISA</strong>, l’assistante numérique de Digital Telecom Network."
+    lisaReply(
+      "Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations",
+      800
     );
-    addMessage("Je peux vous aider pour :<br>📡 Fibre & Télécom<br>⚡ Électricité<br>🔆 Panneaux solaires<br>🔌 Bornes de recharge<br>🛠 Travaux & installations");
-    addMessage("Comment puis-je vous aider aujourd’hui ?");
-    addServiceButtons();
-  }, 1000);
+  }, 900);
+
+  setTimeout(() => {
+    lisaReply("Comment puis-je vous aider aujourd’hui ?", 800);
+    setTimeout(addServiceButtons, 700);
+  }, 1800);
 }
 
 
@@ -214,17 +233,17 @@ function addServiceButtons() {
   msgBox.scrollTop = msgBox.scrollHeight;
 
   document.getElementById("btn-help").onclick = () => {
-    addMessage("Très bien 👍 Quel type d’aide souhaitez-vous ?");
+    lisaReply("Très bien 👍 Quel type d’aide souhaitez-vous ?", 500);
   };
 
   document.getElementById("btn-devis").onclick = () => {
-    addMessage("Parfait 🧾 Quel type de devis souhaitez-vous réaliser ?");
+    lisaReply("Parfait 🧾 Je vais vous aider pour votre demande de devis.", 500);
     if (window.startDevis) startDevis();
   };
 }
 
 
-/* Envoi */
+/* Envoi message utilisateur */
 document.getElementById("dtn-send").addEventListener("click", sendMessage);
 document.getElementById("dtn-input").addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
@@ -238,11 +257,9 @@ function sendMessage() {
   addMessage(msg, "Vous");
   input.value = "";
 
+  // Si le module devis gère le message, on sort
   if (window.processDevisMessage && window.processDevisMessage(msg)) return;
 
-  typing(true);
-  setTimeout(() => {
-    typing(false);
-    addMessage("Merci 🙏 Je traite votre demande…");
-  }, 800);
+  // Réponse générique
+  lisaReply("Merci 🙏 Je traite votre demande…", 800);
 }
