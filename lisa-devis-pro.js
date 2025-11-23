@@ -215,15 +215,15 @@ Souhaitez-vous envoyer cette demande à l’équipe DTN ? (répondez : <strong>o
     devisStep = 99;
 }
 
-/* === ENVOI EMAIL === */
+/* === ENVOI EMAIL — AVEC TES ID EMAILJS ✔️ === */
 function sendDevisMail() {
 
     addMessage("Parfait 👍 J’envoie votre demande à l’équipe DTN…", "LISA");
 
     emailjs
         .send(
-            "service_068lpkn",        // ✅ Service ID
-            "template_ceee5k7",       // ✅ Template ID
+            "service_068lpkn",       // ✔️ Service ID
+            "template_ceee5k7",      // ✔️ Template ID
             {
                 type: devisData.type || "",
                 nom: devisData.nom || "",
@@ -231,7 +231,7 @@ function sendDevisMail() {
                 mail: devisData.mail || "",
                 details: JSON.stringify(devisData, null, 2)
             },
-            "U_SAAVe1bEpxcT99N"       // ✅ Public Key
+            "U_SAAVe1bEpxcT99N"      // ✔️ Public Key
         )
         .then(() => {
             addMessage(
