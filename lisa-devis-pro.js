@@ -1,6 +1,7 @@
 /* =======================================================
    LISA – MODULE PRO : DEMANDES DE DEVIS (EmailJS intégré)
-   Version 1.3 – Vitalien / DTN
+   Version 1.5 – Vitalien / DTN
+   Amélioration : récapitulatif lisible (libellés)
 ======================================================= */
 
 console.log("Module Pro Devis chargé ✔️");
@@ -46,7 +47,6 @@ Merci de choisir une catégorie parmi les suivantes :<br><br>
 /* === TRAITEMENT DU MESSAGE === */
 function handleDevis(message) {
 
-    // Étape 0 : choix du type
     if (devisStep === 0) {
         if (!devisTypes[message]) {
             addMessage("Merci de choisir un numéro entre 1 et 7 🙏", "LISA");
@@ -63,7 +63,6 @@ function handleDevis(message) {
         return;
     }
 
-    // Stocke la réponse précédente
     registerPreviousAnswer(message);
 
     devisStep++;
@@ -91,7 +90,6 @@ function registerPreviousAnswer(message) {
 /* === QUESTIONS PAR SCÉNARIO === */
 function askNextQuestion() {
 
-    // Si toutes les questions sont finies → récap
     if (devisStep === 8) {
         showDevisRecap();
         return;
@@ -108,7 +106,7 @@ function askNextQuestion() {
     else autresQuestions();
 }
 
-/* === LISTE DES QUESTIONS === */
+/* === LISTES DE QUESTIONS === */
 function terrQuestions() {
     const Q = {
         1: "Quel type de travaux de terrassement / génie civil souhaitez-vous réaliser ?",
@@ -200,57 +198,133 @@ function autresQuestions() {
     addMessage(Q[devisStep], "LISA");
 }
 
-/* === RÉCAP === */
+/* =======================================================
+   RÉCAP – version PROPRE avec libellés
+======================================================= */
+function buildRecapLines() {
+    const scen = devisType;
+    const L = [];
+
+    L.push(`Type de prestation : ${devisData.type}`);
+
+    if (scen === "Terrassement / Génie civil") {
+        L.push(`Type de travaux : ${devisData.q1}`);
+        L.push(`Adresse du chantier : ${devisData.q2}`);
+        L.push(`Type de bâtiment : ${devisData.q3}`);
+        L.push(`Plans / documents : ${devisData.q4}`);
+        L.push(`Photos du terrain : ${devisData.q5}`);
+        L.push(`Échéance souhaitée : ${devisData.q6}`);
+    }
+
+    else if (scen === "Électricité générale") {
+        L.push(`Type de bâtiment : ${devisData.q1}`);
+        L.push(`Nature des travaux : ${devisData.q2}`);
+        L.push(`Adresse : ${devisData.q3}`);
+        L.push(`Surface / pièces : ${devisData.q4}`);
+        L.push(`Urgence : ${devisData.q5}`);
+        L.push(`Photos / plans : ${devisData.q6}`);
+    }
+
+    else if (scen === "Panneaux photovoltaïques") {
+        L.push(`Type de bâtiment : ${devisData.q1}`);
+        L.push(`Autoconso / Revente : ${devisData.q2}`);
+        L.push(`Toiture / orientation : ${devisData.q3}`);
+        L.push(`Adresse : ${devisData.q4}`);
+        L.push(`Date souhaitée : ${devisData.q5}`);
+        L.push(`Photos toiture : ${devisData.q6}`);
+    }
+
+    else if (scen === "Bornes de recharge IRVE") {
+        L.push(`Lieu : ${devisData.q1}`);
+        L.push(`Nombre de bornes : ${devisData.q2}`);
+        L.push(`Puissance : ${devisData.q3}`);
+        L.push(`Adresse : ${devisData.q4}`);
+        L.push(`Distance tableau / stationnement : ${devisData.q5}`);
+        L.push(`Photos : ${devisData.q6}`);
+    }
+
+    else if (scen === "Problème internet / fibre") {
+        L.push(`Problème : ${devisData.q1}`);
+        L.push(`Fibre / Cuivre : ${devisData.q2}`);
+        L.push(`Opérateur : ${devisData.q3}`);
+        L.push(`Adresse : ${devisData.q4}`);
+        L.push(`Photos : ${devisData.q5}`);
+        L.push(`Urgence : ${devisData.q6}`);
+    }
+
+    else if (scen === "Recherche de regard / détection des réseaux") {
+        L.push(`Type de recherche : ${devisData.q1}`);
+        L.push(`Adresse : ${devisData.q2}`);
+        L.push(`Contexte : ${devisData.q3}`);
+        L.push(`Accès terrain : ${devisData.q4}`);
+        L.push(`Photos / plans : ${devisData.q5}`);
+        L.push(`Échéance : ${devisData.q6}`);
+    }
+
+    else {
+        L.push(`Description : ${devisData.q1}`);
+        L.push(`Adresse : ${devisData.q2}`);
+        L.push(`Échéance : ${devisData.q3}`);
+        L.push(`Photos : ${devisData.q4}`);
+        L.push(`Documents : ${devisData.q5}`);
+        L.push(`Infos supplémentaires : ${devisData.q6}`);
+    }
+
+    L.push("");
+    L.push(`Nom : ${devisData.nom}`);
+    L.push(`Téléphone : ${devisData.tel}`);
+    L.push(`Email : ${devisData.mail}`);
+
+    return L;
+}
+
+/* === AFFICHAGE DU RÉCAP === */
 function showDevisRecap() {
+
+    const rec = buildRecapLines();
 
     const recapTxt = `
 📄 <strong>RÉCAPITULATIF DE VOTRE DEMANDE</strong><br><br>
 <pre style="white-space: pre-wrap; font-size:12px;">
-${JSON.stringify(devisData, null, 2)}
+${rec.join("\n")}
 </pre>
-Souhaitez-vous envoyer cette demande à l’équipe DTN ? (répondez : <strong>oui</strong> ou <strong>non</strong>)
+Souhaitez-vous envoyer cette demande à l’équipe DTN ? (oui / non)
 `;
 
     addMessage(recapTxt, "LISA");
     devisStep = 99;
 }
 
-/* === ENVOI EMAIL — AVEC TES ID EMAILJS ✔️ === */
+/* === ENVOI EMAIL === */
 function sendDevisMail() {
 
-    addMessage("Parfait 👍 J’envoie votre demande à l’équipe DTN…", "LISA");
+    const details = buildRecapLines().join("\n");
 
     emailjs
         .send(
-            "service_068lpkn",       // ✔️ Service ID
-            "template_ceee5k7",      // ✔️ Template ID
+            "service_068lpkn",
+            "template_ceee5k7",
             {
-                type: devisData.type || "",
-                nom: devisData.nom || "",
-                tel: devisData.tel || "",
-                mail: devisData.mail || "",
-                details: JSON.stringify(devisData, null, 2)
+                type: devisData.type,
+                nom: devisData.nom,
+                tel: devisData.tel,
+                mail: devisData.mail,
+                details: details
             },
-            "U_SAAVe1bEpxcT99N"      // ✔️ Public Key
+            "U_SAAVe1bEpxcT99N"
         )
         .then(() => {
-            addMessage(
-                "✅ Votre demande a bien été envoyée. Nous venons de la transmettre à l’équipe DTN, qui vous recontactera rapidement.",
-                "LISA"
-            );
+            addMessage("✅ Votre demande a bien été envoyée à l’équipe DTN.", "LISA");
         })
         .catch((err) => {
             console.error("Erreur EmailJS :", err);
-            addMessage(
-                "⚠️ Une erreur est survenue lors de l’envoi du mail. Vous pouvez nous contacter directement par téléphone ou par email.",
-                "LISA"
-            );
+            addMessage("⚠️ Une erreur est survenue lors de l’envoi du mail.", "LISA");
         });
 
     modeDevis = false;
 }
 
-/* === CONFIRMATION FINALE === */
+/* === CONFIRMATION === */
 function handleFinal(message) {
     const msg = message.toLowerCase().trim();
 
@@ -259,11 +333,11 @@ function handleFinal(message) {
         return;
     }
 
-    addMessage("Très bien, demande annulée. Je reste disponible si vous avez besoin d’autre chose 😊", "LISA");
+    addMessage("Très bien, demande annulée 😊", "LISA");
     modeDevis = false;
 }
 
-/* === EXPORT GLOBAL === */
+/* === EXPORT === */
 function processDevisMessage(message) {
     if (!modeDevis && message.toLowerCase().startsWith("devis")) {
         startDevis();
